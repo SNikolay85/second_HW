@@ -1,3 +1,6 @@
+import copy
+from django.http import HttpResponse
+from django.urls import reverse
 from django.shortcuts import render
 
 DATA = {
@@ -18,28 +21,21 @@ DATA = {
     },
 }
 
+def recipe_list_view(request):
+    data = ''
+    for recipe in DATA:
+        url = reverse(recipe, kwargs={"recipe_name": recipe})
+        data += f'<div><a href={url}>{recipe.capitalize()}</a></div>'
+    return HttpResponse(data)
 
-def omlet(request):
-    data = DATA.copy()
+
+def recipe_view(request, recipe_name):
     servings = int(request.GET.get('servings', 1))
-    omlet_recipe = {'omlet': data['omlet']}
-    for ingredient, contein in omlet_recipe['omlet'].items():
-        omlet_recipe['omlet'][ingredient] = round(servings * contein, 2)
+    data = copy.deepcopy(DATA)
+    recipe = {recipe_name: data[recipe_name]}
+    for ingredient, contein in recipe[recipe_name].items():
+        recipe[recipe_name][ingredient] = round(servings * contein, 2)
     context = {
-        'recipe': omlet_recipe['omlet'],
-    }
-    return render(request, 'calculator/index.html', context)
-
-
-def pasta(request):
-    context = {
-        'recipe': DATA['pasta']
-    }
-    return render(request, 'calculator/index.html', context)
-
-
-def buter(request):
-    context = {
-        'recipe': DATA['buter']
+        'recipe': recipe[recipe_name]
     }
     return render(request, 'calculator/index.html', context)
